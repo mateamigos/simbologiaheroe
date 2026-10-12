@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>¡Mate-Héroes! - El Código de los Mateamigos</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Bangers (Comic Header) & Outfit (Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* Strict 100vh / 100dvh No Scroll Setup */
+        html, body {
+            height: 100%;
+            height: 100dvh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            font-family: 'Outfit', sans-serif;
+            background-color: #0b1329;
+            color: #f8fafc;
+            background-image: 
+                radial-gradient(rgba(56, 189, 248, 0.12) 2px, transparent 2px),
+                radial-gradient(rgba(244, 63, 94, 0.08) 1.5px, #0b1329 1.5px);
+            background-size: 32px 32px, 16px 16px;
+            background-position: 0 0, 8px 8px;
+        }
+
+        .font-comic {
+            font-family: 'Bangers', cursive, sans-serif;
+            letter-spacing: 1.2px;
+        }
+
+        /* Comic Panel Borders & Drop Shadows */
+        .comic-box {
+            background-color: #1e293b;
+            border: 3px solid #000000;
+            box-shadow: 4px 4px 0px #000000;
+            border-radius: 16px;
+        }
+
+        .comic-box-yellow {
+            background-color: #fef08a;
+            color: #0f172a;
+            border: 3px solid #000000;
+            box-shadow: 4px 4px 0px #000000;
+            border-radius: 16px;
+        }
+
+        /* Comic Buttons */
+        .comic-button {
+            border: 2px solid #000000;
+            box-shadow: 3px 3px 0px #000000;
+            transition: all 0.1s ease;
+            font-family: 'Bangers', cursive;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .comic-button:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px #000000;
+        }
+
+        .comic-button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #000000;
+        }
+
+        .text-comic-shadow {
+            text-shadow: 2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
+        }
+
+        /* Numpad Key Buttons */
+        .numpad-key {
+            background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+            border: 2px solid #000000;
+            box-shadow: 3px 3px 0px #000000;
+            font-family: 'Bangers', cursive;
+            transition: all 0.08s ease;
+            cursor: pointer;
+        }
+
+        .numpad-key:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #000000;
+            background: #0284c7;
+        }
+
+        .symbol-pick-btn {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #000;
+            box-shadow: 2px 2px 0px #000;
+            transition: transform 0.1s ease;
+        }
+
+        .symbol-pick-btn:active {
+            transform: scale(0.94);
+        }
+
+        /* Confetti Canvas Overlay */
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .animate-pop {
+            animation: popIn 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+</head>
+<body class="h-full w-full flex flex-col justify-between overflow-hidden">
+
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- Floating Comic Speech Popup Overlay -->
+    <div id="comicPopup" class="fixed inset-0 pointer-events-none z-50 flex items-center justify-center hidden bg-black/50 backdrop-blur-sm">
+        <div id="comicPopupBox" class="comic-box-yellow p-4 md:p-6 transform rotate-1 max-w-xs md:max-w-sm text-center shadow-2xl transition-all duration-200 scale-90 opacity-0 pointer-events-auto">
+            <div id="comicPopupTitle" class="font-comic text-3xl md:text-5xl text-red-600 text-comic-shadow uppercase mb-1">¡POW!</div>
+            <div id="comicPopupText" class="text-sm md:text-base font-extrabold text-slate-900 leading-tight">¡Ataque Matemático Exitoso!</div>
+        </div>
+    </div>
+
+    <!-- Victory Modal (Round 40 Completed) -->
+    <div id="victoryModal" class="fixed inset-0 pointer-events-none z-50 flex items-center justify-center hidden bg-black/80 backdrop-blur-md">
+        <div class="comic-box p-6 md:p-8 max-w-lg w-11/12 text-center space-y-4 border-4 border-yellow-400 bg-slate-900 pointer-events-auto animate-pop shadow-2xl">
+            <div class="text-6xl animate-bounce">🏆</div>
+            <h2 class="font-comic text-4xl md:text-5xl text-yellow-400 text-comic-shadow">¡MISIÓN CUMPLIDA!</h2>
+            <p class="text-sky-300 font-bold text-lg md:text-xl">¡Has completado las 40 rondas con éxito!</p>
+            
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-700 text-left space-y-2 text-sm">
+                <div class="flex justify-between items-center text-slate-300">
+                    <span>Puntuación Total:</span>
+                    <span id="victoryScore" class="font-comic text-2xl text-green-400">0</span>
+                </div>
+                <div class="flex justify-between items-center text-slate-300">
+                    <span>Rango Alcanzado:</span>
+                    <span class="font-comic text-xl text-yellow-300">⚡ SUPERHÉROE LEYENDA</span>
+                </div>
+            </div>
+
+            <button onclick="restartLevelFromVictory()" class="comic-button bg-yellow-400 hover:bg-yellow-300 text-slate-950 px-8 py-3 rounded-2xl text-2xl font-black w-full">
+                🚀 ¡JUGAR DE NUEVO!
+            </button>
+        </div>
+    </div>
+
+    <!-- Reusable SVG Logo Template -->
+    <svg style="display: none;">
+        <!-- Official Mateamigos Logo Template -->
+        <g id="svg-mateamigos-logo">
+            <!-- Heart Contour (Red/Coral) -->
+            <path d="M 120 45 C 120 18, 80 15, 60 40 C 40 15, 0 18, 0 45 C 0 82, 60 115, 60 115 C 60 115, 120 82, 120 45 Z" fill="none" stroke="#f43f5e" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Stylized 'm' + Root Bar (Cyan/Sky Blue) -->
+            <path d="M -15 65 C -15 50, 0 42, 12 60 L 28 85 L 42 60 C 48 50, 58 50, 64 62 L 85 28 L 135 28" fill="none" stroke="#38bdf8" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+    </svg>
+
+    <!-- SCREEN 1: WELCOME SCREEN (100vh Fit) -->
+    <div id="welcomeScreen" class="h-full w-full flex flex-col justify-between p-3 md:p-5 max-w-6xl mx-auto overflow-hidden">
+        
+        <!-- Header & Logo -->
+        <div class="flex flex-col items-center justify-center text-center space-y-1">
+            <div class="flex items-center justify-center space-x-3">
+                <div class="w-14 h-14 md:w-20 md:h-20 p-1.5 bg-slate-900 rounded-2xl border-3 border-black shadow-[3px_3px_0px_#000] flex items-center justify-center transform -rotate-2">
+                    <svg viewBox="-20 0 160 130" class="w-full h-full">
+                        <use href="#svg-mateamigos-logo" />
+                    </svg>
+                </div>
+                <div class="text-left">
+                    <h1 class="font-comic text-3xl sm:text-5xl md:text-6xl text-yellow-400 text-comic-shadow leading-none">
+                        ¡MATE-HÉROES!
+                    </h1>
+                    <p class="text-xs sm:text-base font-black text-sky-400 font-comic tracking-wide uppercase">
+                        El Código Numérico de los Mateamigos
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Legend Panel -->
+        <div class="comic-box p-3 sm:p-4 flex flex-col justify-between space-y-3 flex-1 min-h-0 my-2 overflow-y-auto">
+            <div class="text-center sm:text-left border-b-2 border-slate-700 pb-1.5 flex items-center justify-between">
+                <h2 class="font-comic text-lg sm:text-2xl text-yellow-400 text-comic-shadow">
+                    📖 SIMBOLOGÍA DE SUPERHÉROES (6 CIFRAS)
+                </h2>
+                <span class="text-[11px] bg-slate-800 text-sky-300 font-bold px-2 py-0.5 rounded-full border border-sky-400">PULSA CADA UNO PARA PROBAR</span>
+            </div>
+
+            <!-- 6 Symbols Display Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 flex-1 items-center">
+                
+                <!-- CM: Puño -->
+                <div onclick="speakSymbolInfo('CM')" class="symbol-pick-btn p-2 rounded-xl text-center cursor-pointer flex flex-col items-center justify-center border border-blue-500 h-full">
+                    <span class="text-[10px] font-black bg-blue-900 text-blue-200 px-1.5 py-0.5 rounded border border-blue-400 mb-1">100.000</span>
+                    <div class="w-10 h-10 md:w-12 md:h-12 my-0.5" id="welc-icon-cm"></div>
+                    <span class="text-xs font-bold text-white">Puño (CM)</span>
+                </div>
+
+                <!-- DM: Escarabajo -->
+                <div onclick="speakSymbolInfo('DM')" class="symbol-pick-btn p-2 rounded-xl text-center cursor-pointer flex flex-col items-center justify-center border border-emerald-500 h-full">
+                    <span class="text-[10px] font-black bg-emerald-900 text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-400 mb-1">10.000</span>
+                    <div class="w-10 h-10 md:w-12 md:h-12 my-0.5" id="welc-icon-dm"></div>
+                    <span class="text-xs font-bold text-white">Escarabajo (DM)</span>
+                </div>
+
+                <!-- UM: Águila -->
+                <div onclick="speakSymbolInfo('UM')" class="symbol-pick-btn p-2 rounded-xl text-center cursor-pointer flex flex-col items-center justify-center border border-purple-500 h-full">
+                    <span class="text-[10px] font-black bg-purple-900 text-purple-200 px-1.5 py-0.5 rounded border border-purple-400 mb-1">1.000</span>
+                    <div class="w-10 h-10 md:w-12 md:h-12 my-0.5" id="welc-icon-um"></div>
+                    <span class="text-xs font-bold text-white">Águila (UM)</span>
+                </div>
+
+                <!-- C: Rayo -->
+                <div onclick="speakSymbolInfo('C')" class="symbol-pick-btn p-2 rounded-xl text-center cursor-pointer flex flex-col items-center justify-center border border-yellow-500 h-full">
+                    <span class="text-[10px] font-black bg-yellow-950 text-yellow-300 px-1.5 py-0.5 rounded border border-yellow-400 mb-1">100</span>
+                    <div class="w-10 h-10 md:w-12 md:h-12 my-0.5" id="welc-icon-c"></div>
+                    <span class="text-xs font-bold text-white">Rayo (C)</span>
+                </div>
+
+                <!-- D: Escudo -->
+                <div onclick="speakSymbolInfo('D')" class="symbol-pick-btn p-2 rounded-xl text-center cursor-pointer flex flex-col items-center justify-center border border-red-500 h-full">
+                    <span class="text-[10px] font-black bg-red-950 text-red-200 px-1.5 py-0.5 rounded border border-red-400 mb-1">10</span>
+                    <div class="w-10 h-10 md:w-12 md:h-12 my-0.5" id="welc-icon-d"></div>
+                    <span class="text-xs font-bold text-white">Escudo (D)</span>
+                </div>
+
+                <!-- U: Katana -->
+                <div onclick="speakSymbolInfo('U')" class="symbol-pick-btn p-2 rounded-xl text-center cursor-pointer flex flex-col items-center justify-center border border-amber-600 h-full">
+                    <span class="text-[10px] font-black bg-amber-950 text-amber-200 px-1.5 py-0.5 rounded border border-amber-400 mb-1">1</span>
+                    <div class="w-10 h-10 md:w-12 md:h-12 my-0.5" id="welc-icon-u"></div>
+                    <span class="text-xs font-bold text-white">Katana (U)</span>
+                </div>
+
+            </div>
+
+            <!-- Pre-Game Settings -->
+            <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-700 flex flex-wrap items-center justify-around gap-2 text-xs">
+                
+                <!-- Select Difficulty -->
+                <div class="flex items-center space-x-1.5">
+                    <span class="font-bold text-slate-400 uppercase">Cifras:</span>
+                    <button onclick="setWelcomeDifficulty('easy')" id="welcDiffEasy" class="comic-button bg-slate-700 text-slate-300 px-2 py-1 rounded-lg">4 Cifras</button>
+                    <button onclick="setWelcomeDifficulty('medium')" id="welcDiffMedium" class="comic-button bg-slate-700 text-slate-300 px-2 py-1 rounded-lg">5 Cifras</button>
+                    <button onclick="setWelcomeDifficulty('hard')" id="welcDiffHard" class="comic-button bg-red-600 text-white px-2 py-1 rounded-lg">6 Cifras</button>
+                </div>
+
+                <!-- Select Initial Mode -->
+                <div class="flex items-center space-x-1.5">
+                    <span class="font-bold text-slate-400 uppercase">Modo:</span>
+                    <button onclick="setWelcomeMode('mode1')" id="welcMode1" class="comic-button bg-sky-500 text-white px-2 py-1 rounded-lg">🔍 1: Descifra</button>
+                    <button onclick="setWelcomeMode('mode2')" id="welcMode2" class="comic-button bg-slate-700 text-slate-300 px-2 py-1 rounded-lg">⚡ 2: Construye</button>
+                    <button onclick="setWelcomeMode('mode3')" id="welcMode3" class="comic-button bg-slate-700 text-slate-300 px-2 py-1 rounded-lg">👾 3: Villanos</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Start CTA -->
+        <div class="flex justify-center pb-1 shrink-0">
+            <button onclick="startGameFromWelcome()" class="comic-button bg-yellow-400 hover:bg-yellow-300 text-slate-950 px-8 py-3 rounded-2xl text-2xl md:text-3xl font-black shadow-xl flex items-center space-x-2 transform hover:scale-105">
+                <span>🚀</span>
+                <span>¡COMENZAR MISIÓN!</span>
+            </button>
+        </div>
+
+        <div class="text-center text-[11px] text-slate-400 font-semibold shrink-0">
+            Mateamigos &copy; Sistema Educativo
+        </div>
+    </div>
+
+    <!-- SCREEN 2: MAIN GAME PLAY AREA (100vh Fit, No Scroll) -->
+    <div id="gameScreen" class="hidden h-full w-full flex flex-col justify-between overflow-hidden">
+        
+        <!-- Compact Header Bar with 40-Round Indicator -->
+        <header class="bg-slate-900 border-b-2 border-black px-3 py-1.5 shrink-0 shadow-md">
+            <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+                
+                <!-- Logo & Game Title -->
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="goToWelcomeScreen()">
+                    <div class="w-8 h-8 md:w-10 md:h-10 bg-slate-950 p-1 rounded-xl border border-black shadow-[1px_1px_0px_#000] rotate-[-2deg] shrink-0">
+                        <svg viewBox="-20 0 160 130" class="w-full h-full">
+                            <use href="#svg-mateamigos-logo" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="font-comic text-xl md:text-2xl text-yellow-400 text-comic-shadow leading-none">
+                            ¡MATE-HÉROES!
+                        </h1>
+                        <p class="text-[9px] font-extrabold text-sky-400 tracking-wider uppercase leading-none">Mateamigos</p>
+                    </div>
+                </div>
+
+                <!-- Stats & Round Counter Bar (1 / 40) -->
+                <div class="flex items-center space-x-2 text-xs font-black">
+                    
+                    <!-- Round Counter Badge -->
+                    <div class="bg-slate-950 border-2 border-yellow-400 px-2.5 py-0.5 rounded-lg flex items-center space-x-1 shadow-inner">
+                        <span class="text-[10px] text-yellow-400 uppercase font-bold">🎯 RONDA:</span>
+                        <span id="roundDisplay" class="font-comic text-base md:text-lg text-white">1 / 40</span>
+                    </div>
+
+                    <!-- Score -->
+                    <div class="bg-slate-800 border border-black px-2 py-0.5 rounded-lg flex items-center space-x-1">
+                        <span class="text-[9px] text-slate-400 uppercase">Pts:</span>
+                        <span id="scoreDisplay" class="text-green-400 font-comic text-base">0</span>
+                    </div>
+
+                    <!-- Streak -->
+                    <div class="bg-slate-800 border border-black px-2 py-0.5 rounded-lg flex items-center space-x-1">
+                        <span id="streakDisplay" class="text-orange-400 font-comic text-base">🔥 0</span>
+                    </div>
+
+                    <!-- Audio Toggle -->
+                    <button id="soundToggleBtn" onclick="toggleAudio()" class="comic-button bg-purple-600 hover:bg-purple-500 text-white p-1 rounded-lg text-xs" title="Música / Sonido">
+                        <span id="soundIcon">🔊</span>
+                    </button>
+
+                    <!-- Home -->
+                    <button onclick="goToWelcomeScreen()" class="comic-button bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded-lg text-xs">
+                        🏠
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Gameplay Viewport (Strict Flex-1 No Scroll) -->
+        <main class="flex-1 min-h-0 max-w-7xl mx-auto w-full p-2 md:p-3 flex flex-col justify-between space-y-2 overflow-hidden">
+
+            <!-- PERMANENT GAMEPLAY SYMBOLOGY LEGEND STRIP -->
+            <div class="comic-box p-1.5 bg-slate-950/90 border-2 border-yellow-400/80 shrink-0 flex items-center justify-between gap-1 overflow-x-auto">
+                <div class="text-[10px] font-black text-yellow-400 uppercase tracking-wide shrink-0 pr-1 border-r border-slate-700 hidden sm:block">
+                    ⚡ LEYENDA:
+                </div>
+                
+                <div class="flex items-center justify-between w-full space-x-1 text-[11px] font-bold">
+                    <!-- CM -->
+                    <div class="bg-blue-950/80 border border-blue-500 px-1.5 py-0.5 rounded-md flex items-center space-x-1 shrink-0">
+                        <div class="w-4 h-4" id="leg-icon-cm"></div>
+                        <span class="text-blue-300 font-mono text-[10px]">CM = 100.000</span>
+                    </div>
+                    <!-- DM -->
+                    <div class="bg-emerald-950/80 border border-emerald-500 px-1.5 py-0.5 rounded-md flex items-center space-x-1 shrink-0">
+                        <div class="w-4 h-4" id="leg-icon-dm"></div>
+                        <span class="text-emerald-300 font-mono text-[10px]">DM = 10.000</span>
+                    </div>
+                    <!-- UM -->
+                    <div class="bg-purple-950/80 border border-purple-500 px-1.5 py-0.5 rounded-md flex items-center space-x-1 shrink-0">
+                        <div class="w-4 h-4" id="leg-icon-um"></div>
+                        <span class="text-purple-300 font-mono text-[10px]">UM = 1.000</span>
+                    </div>
+                    <!-- C -->
+                    <div class="bg-yellow-950/80 border border-yellow-500 px-1.5 py-0.5 rounded-md flex items-center space-x-1 shrink-0">
+                        <div class="w-4 h-4" id="leg-icon-c"></div>
+                        <span class="text-yellow-300 font-mono text-[10px]">C = 100</span>
+                    </div>
+                    <!-- D -->
+                    <div class="bg-red-950/80 border border-red-500 px-1.5 py-0.5 rounded-md flex items-center space-x-1 shrink-0">
+                        <div class="w-4 h-4" id="leg-icon-d"></div>
+                        <span class="text-red-300 font-mono text-[10px]">D = 10</span>
+                    </div>
+                    <!-- U -->
+                    <div class="bg-amber-950/80 border border-amber-600 px-1.5 py-0.5 rounded-md flex items-center space-x-1 shrink-0">
+                        <div class="w-4 h-4" id="leg-icon-u"></div>
+                        <span class="text-amber-300 font-mono text-[10px]">U = 1</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-Header Mode & Difficulty Selector -->
+            <div class="comic-box p-1.5 flex items-center justify-between gap-2 shrink-0">
+                <!-- Mode Switcher -->
+                <div class="flex items-center space-x-1">
+                    <button id="mode1Btn" onclick="switchMode('mode1')" class="comic-button bg-sky-500 text-white px-2.5 py-1 rounded-lg text-xs md:text-sm">
+                        🔍 Descifra
+                    </button>
+                    <button id="mode2Btn" onclick="switchMode('mode2')" class="comic-button bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-xs md:text-sm">
+                        ⚡ Recuadro
+                    </button>
+                    <button id="mode3Btn" onclick="switchMode('mode3')" class="comic-button bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-xs md:text-sm">
+                        👾 Villanos
+                    </button>
+                </div>
+
+                <!-- Difficulty Selector -->
+                <div class="flex items-center space-x-1 bg-slate-900/80 p-1 rounded-lg border border-slate-700">
+                    <button id="diffEasy" onclick="setDifficulty('easy')" class="comic-button bg-slate-700 text-slate-300 px-2 py-0.5 rounded text-[11px]">4 Cifras</button>
+                    <button id="diffMedium" onclick="setDifficulty('medium')" class="comic-button bg-slate-700 text-slate-300 px-2 py-0.5 rounded text-[11px]">5 Cifras</button>
+                    <button id="diffHard" onclick="setDifficulty('hard')" class="comic-button bg-red-600 text-white px-2 py-0.5 rounded text-[11px]">6 Cifras</button>
+                </div>
+            </div>
+
+            <!-- MODE 1: DESCIFRA EL CÓDIGO -->
+            <section id="mode1Container" class="comic-box p-2 md:p-3 flex flex-col justify-between flex-1 min-h-0 space-y-2 overflow-hidden">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-1 shrink-0">
+                    <div class="text-xs font-bold text-yellow-400 uppercase tracking-wide">
+                        MODO 1: Descifra los símbolos esparcidos
+                    </div>
+                    <button onclick="generateMode1Problem()" class="comic-button bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-0.5 rounded text-xs">
+                        🔄 Nuevo
+                    </button>
+                </div>
+
+                <!-- Split View: Left Battlefield, Right Onscreen Numpad -->
+                <div class="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-2 overflow-hidden">
+                    
+                    <!-- Left: Scattered Symbols Battlefield (7 Cols) -->
+                    <div class="md:col-span-7 bg-slate-950/90 rounded-xl border-2 border-slate-800 p-2 flex flex-wrap items-center justify-center content-center gap-1.5 md:gap-2 overflow-hidden shadow-inner relative" id="battlefield">
+                        <!-- Dynamic scattered symbols -->
+                    </div>
+
+                    <!-- Right: Number Display & Touch Numpad (5 Cols) -->
+                    <div class="md:col-span-5 flex flex-col justify-between bg-slate-900/90 p-2 rounded-xl border border-slate-700 space-y-1.5">
+                        
+                        <!-- Number Display Screen -->
+                        <div class="bg-slate-950 border-2 border-yellow-400 rounded-xl p-1.5 text-center shadow-inner">
+                            <span class="text-[10px] text-slate-400 uppercase font-bold block">Tu Respuesta:</span>
+                            <div id="numpadDisplay1" class="font-comic text-3xl md:text-4xl text-yellow-300 tracking-wider h-10 flex items-center justify-center">
+                                _
+                            </div>
+                        </div>
+
+                        <!-- Onscreen Touch Numpad Grid -->
+                        <div class="grid grid-cols-3 gap-1.5 flex-1 min-h-0">
+                            <button onclick="pressNumpad('1')" class="numpad-key text-xl md:text-2xl text-white rounded-lg">1</button>
+                            <button onclick="pressNumpad('2')" class="numpad-key text-xl md:text-2xl text-white rounded-lg">2</button>
+                            <button onclick="pressNumpad('3')" class="numpad-key text-xl md:text-2xl text-white rounded-lg">3</button>
+                            <button onclick="pressNumpad('4')" class="numpad-key text-xl md:text-2xl text-white rounded-lg">4</button>
+                            <button onclick="pressNumpad('5')" class="numpad-key text-xl md:text-2xl text-white rounded-lg">5</button>
+                            <button onclick="pressNumpad('6')" class="numpad-key text-xl md:text-2xl text-white rounded-lg">6</button>
+                            <button onclick="pressNumpad('7')" class="numpad-key text-xl md:text-2xl text-white rounded-lg">7</button>
+                            <button onclick="pressNumpad('8')" class="numpad-key text-xl md:text-2xl text-white rounded-lg">8</button>
+                            <button onclick="pressNumpad('9')" class="numpad-key text-xl md:text-2xl text-white rounded-lg">9</button>
+                            <button onclick="pressNumpad('back')" class="comic-button bg-amber-600 hover:bg-amber-500 text-white text-xl rounded-lg flex items-center justify-center">⌫</button>
+                            <button onclick="pressNumpad('0')" class="numpad-key text-xl md:text-2xl text-white rounded-lg">0</button>
+                            <button onclick="checkMode1Answer()" class="comic-button bg-green-500 hover:bg-green-400 text-slate-950 text-xl font-black rounded-lg flex items-center justify-center">✔</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODE 2: CONSTRUYE EN EL RECUADRO -->
+            <section id="mode2Container" class="comic-box p-2 md:p-3 flex flex-col justify-between flex-1 min-h-0 space-y-2 overflow-hidden hidden">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-1 shrink-0">
+                    <div class="text-xs font-bold text-yellow-400 uppercase tracking-wide">
+                        MODO 2: Construye la cantidad en el recuadro
+                    </div>
+                    <button onclick="generateMode2Problem()" class="comic-button bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-0.5 rounded text-xs">
+                        🔄 Nuevo
+                    </button>
+                </div>
+
+                <!-- Target Number Banner -->
+                <div class="bg-gradient-to-r from-blue-950 via-indigo-900 to-purple-950 border-2 border-yellow-400 rounded-xl p-2 text-center shadow-md shrink-0">
+                    <span class="text-[10px] font-black uppercase text-yellow-300 tracking-widest block">NÚMERO OBJETIVO A FORMAR:</span>
+                    <div id="mode2TargetDisplay" class="font-comic text-4xl md:text-5xl text-yellow-400 text-comic-shadow leading-tight">
+                        000.000
+                    </div>
+                </div>
+
+                <!-- Palette Picker Row -->
+                <div class="grid grid-cols-6 gap-1 shrink-0">
+                    <button onclick="addSymbolToBox('CM')" class="symbol-pick-btn p-1 rounded-lg text-center border border-blue-500 flex flex-col items-center">
+                        <div class="w-6 h-6 md:w-8 md:h-8" id="m2-btn-cm"></div>
+                        <span class="text-[9px] font-black text-blue-300">+100.000</span>
+                    </button>
+                    <button onclick="addSymbolToBox('DM')" class="symbol-pick-btn p-1 rounded-lg text-center border border-emerald-500 flex flex-col items-center">
+                        <div class="w-6 h-6 md:w-8 md:h-8" id="m2-btn-dm"></div>
+                        <span class="text-[9px] font-black text-emerald-300">+10.000</span>
+                    </button>
+                    <button onclick="addSymbolToBox('UM')" class="symbol-pick-btn p-1 rounded-lg text-center border border-purple-500 flex flex-col items-center">
+                        <div class="w-6 h-6 md:w-8 md:h-8" id="m2-btn-um"></div>
+                        <span class="text-[9px] font-black text-purple-300">+1.000</span>
+                    </button>
+                    <button onclick="addSymbolToBox('C')" class="symbol-pick-btn p-1 rounded-lg text-center border border-yellow-500 flex flex-col items-center">
+                        <div class="w-6 h-6 md:w-8 md:h-8" id="m2-btn-c"></div>
+                        <span class="text-[9px] font-black text-yellow-300">+100</span>
+                    </button>
+                    <button onclick="addSymbolToBox('D')" class="symbol-pick-btn p-1 rounded-lg text-center border border-red-500 flex flex-col items-center">
+                        <div class="w-6 h-6 md:w-8 md:h-8" id="m2-btn-d"></div>
+                        <span class="text-[9px] font-black text-red-300">+10</span>
+                    </button>
+                    <button onclick="addSymbolToBox('U')" class="symbol-pick-btn p-1 rounded-lg text-center border border-amber-600 flex flex-col items-center">
+                        <div class="w-6 h-6 md:w-8 md:h-8" id="m2-btn-u"></div>
+                        <span class="text-[9px] font-black text-amber-300">+1</span>
+                    </button>
+                </div>
+
+                <!-- Recuadro de Construcción -->
+                <div class="flex-1 min-h-0 bg-slate-950 p-2 rounded-xl border-2 border-dashed border-yellow-400 flex flex-col justify-between space-y-1.5 overflow-hidden">
+                    <div class="flex items-center justify-between text-[11px] text-slate-400 border-b border-slate-800 pb-0.5 shrink-0">
+                        <span>📦 RECUADRO DE CONSTRUCCIÓN</span>
+                        <span>(Toca un símbolo para quitarlo)</span>
+                    </div>
+
+                    <div id="constructionBox" class="flex-1 min-h-0 bg-slate-900/80 rounded-lg p-2 flex flex-wrap items-center align-content-start gap-1.5 overflow-y-auto">
+                        <!-- Placed symbols render here -->
+                    </div>
+
+                    <div class="flex items-center justify-between shrink-0 pt-1 border-t border-slate-800">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-xs text-slate-400 font-bold">Suma:</span>
+                            <span id="constructionBoxSum" class="font-comic text-2xl text-cyan-400">0</span>
+                        </div>
+                        <div class="flex items-center space-x-1.5">
+                            <button onclick="clearConstructionBox()" class="comic-button bg-red-600 hover:bg-red-500 text-white px-2.5 py-1 rounded text-xs">
+                                🗑️ Vaciar
+                            </button>
+                            <button onclick="checkMode2Answer()" class="comic-button bg-yellow-400 hover:bg-yellow-300 text-slate-950 px-4 py-1 rounded text-sm font-black">
+                                💥 COMPROBAR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODE 3: BATALLA DE VILLANOS -->
+            <section id="mode3Container" class="comic-box p-2 md:p-3 flex flex-col justify-between flex-1 min-h-0 space-y-2 overflow-hidden hidden">
+                <div class="comic-box-yellow p-2 border-2 border-black flex items-center justify-between shrink-0">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 bg-red-600 rounded-lg border-2 border-black flex items-center justify-center text-xl shrink-0" id="villainAvatar">
+                            🦹‍♂️
+                        </div>
+                        <div>
+                            <div id="villainName" class="font-comic text-xl text-red-600 leading-none">LORD CERO ABSOLUTO</div>
+                            <div class="text-[10px] text-slate-800 font-black">¡Descifra antes del tiempo!</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3 font-comic text-base text-slate-900">
+                        <span>⏰ <span id="mode3Timer" class="text-red-600">30s</span></span>
+                        <span>❤️ <span id="villainHpText" class="text-red-600">100 HP</span></span>
+                    </div>
+                </div>
+
+                <div id="mode3StartOverlay" class="flex-1 min-h-0 bg-slate-900/95 border-2 border-black p-4 rounded-xl text-center flex flex-col items-center justify-center space-y-2">
+                    <h3 class="font-comic text-3xl text-yellow-400">¿LISTO PARA EL COMBATE?</h3>
+                    <p class="text-slate-300 text-xs md:text-sm max-w-sm">
+                        Responde los códigos en 30 segundos. ¡Cada acierto resta vida al villano!
+                    </p>
+                    <button onclick="startMode3Battle()" class="comic-button bg-red-600 hover:bg-red-500 text-white px-6 py-2.5 rounded-xl text-xl font-black">
+                        ⚔️ ¡INICIAR BATALLA!
+                    </button>
+                </div>
+
+                <div id="mode3PlayArea" class="hidden flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-2 overflow-hidden">
+                    <div class="md:col-span-7 bg-slate-950/90 rounded-xl border-2 border-slate-800 p-2 flex flex-wrap items-center justify-center content-center gap-1.5 overflow-hidden shadow-inner" id="mode3Battlefield">
+                    </div>
+
+                    <div class="md:col-span-5 flex flex-col justify-between bg-slate-900/90 p-2 rounded-xl border border-slate-700 space-y-1">
+                        <div class="bg-slate-950 border-2 border-red-500 rounded-xl p-1 text-center shadow-inner">
+                            <div id="numpadDisplay3" class="font-comic text-2xl md:text-3xl text-yellow-300 tracking-wider h-8 flex items-center justify-center">
+                                _
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-1 flex-1 min-h-0">
+                            <button onclick="pressNumpad('1')" class="numpad-key text-lg text-white rounded">1</button>
+                            <button onclick="pressNumpad('2')" class="numpad-key text-lg text-white rounded">2</button>
+                            <button onclick="pressNumpad('3')" class="numpad-key text-lg text-white rounded">3</button>
+                            <button onclick="pressNumpad('4')" class="numpad-key text-lg text-white rounded">4</button>
+                            <button onclick="pressNumpad('5')" class="numpad-key text-lg text-white rounded">5</button>
+                            <button onclick="pressNumpad('6')" class="numpad-key text-lg text-white rounded">6</button>
+                            <button onclick="pressNumpad('7')" class="numpad-key text-lg text-white rounded">7</button>
+                            <button onclick="pressNumpad('8')" class="numpad-key text-lg text-white rounded">8</button>
+                            <button onclick="pressNumpad('9')" class="numpad-key text-lg text-white rounded">9</button>
+                            <button onclick="pressNumpad('back')" class="comic-button bg-amber-600 text-white text-lg rounded flex items-center justify-center">⌫</button>
+                            <button onclick="pressNumpad('0')" class="numpad-key text-lg text-white rounded">0</button>
+                            <button onclick="checkMode3Answer()" class="comic-button bg-red-600 text-white text-lg font-black rounded flex items-center justify-center">💥</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="bg-slate-900 border-t border-slate-800 py-1 text-center text-[10px] text-slate-400 font-semibold shrink-0">
+            ¡Mate-Héroes! &copy; Mateamigos - Juego de Matemáticas Posicionales.
+        </footer>
+    </div>
+
+    <script>
+        // 6 Superhero Symbol SVG Definitions
+        const SYMBOL_SVGS = {
+            // CM: Puño
+            CM: `<svg viewBox="0 0 100 100" class="w-full h-full filter drop-shadow-[1px_1px_0px_#000]">
+                    <path d="M25 45 C25 35, 35 25, 45 25 C50 25, 55 28, 60 32 C65 28, 72 28, 78 35 C83 40, 85 48, 80 58 C75 68, 65 85, 45 85 C30 85, 20 70, 20 58 Z" fill="#0284c7" stroke="#000000" stroke-width="4"/>
+                    <path d="M30 45 C30 38, 38 32, 46 32 C52 32, 58 38, 58 48 C58 58, 45 78, 35 75 C28 73, 30 52, 30 45 Z" fill="#38bdf8" stroke="#000" stroke-width="3"/>
+                    <circle cx="40" cy="42" r="4" fill="#ffffff" />
+                    <circle cx="55" cy="45" r="3" fill="#ffffff" />
+                 </svg>`,
+
+            // DM: Escarabajo
+            DM: `<svg viewBox="0 0 100 100" class="w-full h-full filter drop-shadow-[1px_1px_0px_#000]">
+                    <ellipse cx="32" cy="50" rx="18" ry="30" fill="#eab308" stroke="#000" stroke-width="4" transform="rotate(-20 32 50)"/>
+                    <ellipse cx="68" cy="50" rx="18" ry="30" fill="#eab308" stroke="#000" stroke-width="4" transform="rotate(20 68 50)"/>
+                    <ellipse cx="50" cy="55" rx="16" ry="24" fill="#10b981" stroke="#000" stroke-width="4"/>
+                    <circle cx="50" cy="28" r="10" fill="#047857" stroke="#000" stroke-width="3"/>
+                    <path d="M45 20 C40 10, 30 12, 28 16 M55 20 C60 10, 70 12, 72 16" stroke="#000" stroke-width="3" fill="none" stroke-linecap="round"/>
+                 </svg>`,
+
+            // UM: Águila Real
+            UM: `<svg viewBox="0 0 100 100" class="w-full h-full filter drop-shadow-[1px_1px_0px_#000]">
+                    <path d="M 50 45 Q 25 10 5 35 Q 25 55 42 55 Z" fill="#3b0764" stroke="#000" stroke-width="3"/>
+                    <path d="M 50 45 Q 75 10 95 35 Q 75 55 58 55 Z" fill="#3b0764" stroke="#000" stroke-width="3"/>
+                    <path d="M 42 50 L 50 85 L 58 50 Z" fill="#581c87" stroke="#000" stroke-width="3"/>
+                    <ellipse cx="50" cy="42" rx="12" ry="16" fill="#6b21a8" stroke="#000" stroke-width="3"/>
+                    <polygon points="50,42 60,46 50,50" fill="#facc15" stroke="#000" stroke-width="2"/>
+                    <circle cx="45" cy="38" r="2.5" fill="#facc15"/>
+                 </svg>`,
+
+            // C: Rayo Veloz
+            C: `<svg viewBox="0 0 100 100" class="w-full h-full filter drop-shadow-[1px_1px_0px_#000]">
+                    <polygon points="55,5 20,52 48,52 35,95 80,42 52,42" fill="#facc15" stroke="#000000" stroke-width="4" stroke-linejoin="round"/>
+                    <polygon points="53,12 28,50 48,50 39,82 72,44 50,44" fill="#fef08a"/>
+                 </svg>`,
+
+            // D: Escudo Estelar
+            D: `<svg viewBox="0 0 100 100" class="w-full h-full filter drop-shadow-[1px_1px_0px_#000]">
+                    <circle cx="50" cy="50" r="40" fill="#dc2626" stroke="#000" stroke-width="4"/>
+                    <circle cx="50" cy="50" r="30" fill="#1d4ed8" stroke="#000" stroke-width="3"/>
+                    <circle cx="50" cy="50" r="20" fill="#3b82f6" stroke="#000" stroke-width="2"/>
+                    <polygon points="50,34 53,43 62,43 55,48 57,57 50,51 43,57 45,48 38,43 47,43" fill="#facc15" stroke="#000" stroke-width="1.5"/>
+                 </svg>`,
+
+            // U: Katana
+            U: `<svg viewBox="0 0 100 100" class="w-full h-full filter drop-shadow-[1px_1px_0px_#000]">
+                    <path d="M78 12 C82 15, 80 22, 70 35 L32 75 C30 77, 26 77, 24 75 L20 71 C18 69, 18 65, 20 63 L60 25 C72 14, 75 10, 78 12 Z" fill="#e2e8f0" stroke="#000" stroke-width="4"/>
+                    <path d="M72 18 L26 66" stroke="#94a3b8" stroke-width="2"/>
+                    <ellipse cx="25" cy="71" rx="7" ry="10" fill="#d97706" stroke="#000" stroke-width="3" transform="rotate(-45 25 71)"/>
+                    <path d="M22 74 L12 84 C10 86, 7 86, 5 84 L3 82 C1 80, 1 77, 3 75 L13 65 Z" fill="#7c2d12" stroke="#000" stroke-width="3"/>
+                 </svg>`
+        };
+
+        const SYMBOL_VALUES = { CM: 100000, DM: 10000, UM: 1000, C: 100, D: 10, U: 1 };
+        const SYMBOL_NAMES = {
+            CM: 'Puño (100.000)',
+            DM: 'Escarabajo (10.000)',
+            UM: 'Águila (1.000)',
+            C: 'Rayo (100)',
+            D: 'Escudo (10)',
+            U: 'Katana (1)'
+        };
+
+        // Game State with 40-Round System
+        let gameState = {
+            score: 0,
+            streak: 0,
+            round: 1,
+            maxRounds: 40,
+            difficulty: 'hard', // 'easy' (4 digits), 'medium' (5 digits), 'hard' (6 digits)
+            currentMode: 'mode1',
+            soundEnabled: true,
+            numpadInput: '',
+
+            // Mode 1
+            mode1TargetNumber: 0,
+
+            // Mode 2
+            mode2TargetNumber: 0,
+            mode2BoxSymbols: [],
+
+            // Mode 3
+            mode3Active: false,
+            mode3Timer: 30,
+            mode3Interval: null,
+            villainHp: 100,
+            mode3TargetNumber: 0
+        };
+
+        // Web Audio Synthesizer Engine
+        let audioCtx = null;
+        let bgMusicInterval = null;
+        let musicStep = 0;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) audioCtx = new AudioContext();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleAudio() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            document.getElementById('soundIcon').innerText = gameState.soundEnabled ? '🔊' : '🔇';
+            if (gameState.soundEnabled) {
+                startSuperheroMusic();
+            } else {
+                stopSuperheroMusic();
+            }
+        }
+
+        function startSuperheroMusic() {
+            if (!gameState.soundEnabled) return;
+            initAudio();
+            if (bgMusicInterval) clearInterval(bgMusicInterval);
+
+            // Heroic Bassline & Arpeggio Loop (~130 BPM)
+            const bassLine = [130.81, 130.81, 155.56, 174.61, 130.81, 130.81, 196.00, 174.61];
+            const melodyLine = [261.63, 311.13, 392.00, 523.25, 392.00, 311.13, 349.23, 293.66];
+
+            bgMusicInterval = setInterval(() => {
+                if (!gameState.soundEnabled || !audioCtx) return;
+                const now = audioCtx.currentTime;
+
+                const bassOsc = audioCtx.createOscillator();
+                const bassGain = audioCtx.createGain();
+                bassOsc.type = 'sawtooth';
+                bassOsc.frequency.setValueAtTime(bassLine[musicStep % bassLine.length], now);
+                bassGain.gain.setValueAtTime(0.04, now);
+                bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                bassOsc.connect(bassGain);
+                bassGain.connect(audioCtx.destination);
+                bassOsc.start(now);
+                bassOsc.stop(now + 0.18);
+
+                if (musicStep % 2 === 0) {
+                    const melOsc = audioCtx.createOscillator();
+                    const melGain = audioCtx.createGain();
+                    melOsc.type = 'triangle';
+                    melOsc.frequency.setValueAtTime(melodyLine[musicStep % melodyLine.length], now);
+                    melGain.gain.setValueAtTime(0.03, now);
+                    melGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                    melOsc.connect(melGain);
+                    melGain.connect(audioCtx.destination);
+                    melOsc.start(now);
+                    melOsc.stop(now + 0.22);
+                }
+
+                musicStep++;
+            }, 220);
+        }
+
+        function stopSuperheroMusic() {
+            if (bgMusicInterval) {
+                clearInterval(bgMusicInterval);
+                bgMusicInterval = null;
+            }
+        }
+
+        function playSound(type) {
+            if (!gameState.soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                const notes = [261.63, 329.63, 392.00, 523.25];
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+                    gain.gain.setValueAtTime(0.18, now + idx * 0.07);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.07);
+                    osc.stop(now + idx * 0.07 + 0.25);
+                });
+            } else if (type === 'wrong') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(140, now);
+                osc.frequency.exponentialRampToValueAtTime(60, now + 0.25);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'click') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(500, now);
+                osc.frequency.exponentialRampToValueAtTime(250, now + 0.05);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'add') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'remove') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.08);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            }
+        }
+
+        // Initialize elements
+        window.onload = function() {
+            injectStaticIcons();
+            initConfetti();
+        };
+
+        function injectStaticIcons() {
+            // Welcome screen
+            document.getElementById('welc-icon-cm').innerHTML = SYMBOL_SVGS.CM;
+            document.getElementById('welc-icon-dm').innerHTML = SYMBOL_SVGS.DM;
+            document.getElementById('welc-icon-um').innerHTML = SYMBOL_SVGS.UM;
+            document.getElementById('welc-icon-c').innerHTML = SYMBOL_SVGS.C;
+            document.getElementById('welc-icon-d').innerHTML = SYMBOL_SVGS.D;
+            document.getElementById('welc-icon-u').innerHTML = SYMBOL_SVGS.U;
+
+            // Permanent Game Screen Legend Ribbon
+            document.getElementById('leg-icon-cm').innerHTML = SYMBOL_SVGS.CM;
+            document.getElementById('leg-icon-dm').innerHTML = SYMBOL_SVGS.DM;
+            document.getElementById('leg-icon-um').innerHTML = SYMBOL_SVGS.UM;
+            document.getElementById('leg-icon-c').innerHTML = SYMBOL_SVGS.C;
+            document.getElementById('leg-icon-d').innerHTML = SYMBOL_SVGS.D;
+            document.getElementById('leg-icon-u').innerHTML = SYMBOL_SVGS.U;
+
+            // Mode 2 Palette
+            document.getElementById('m2-btn-cm').innerHTML = SYMBOL_SVGS.CM;
+            document.getElementById('m2-btn-dm').innerHTML = SYMBOL_SVGS.DM;
+            document.getElementById('m2-btn-um').innerHTML = SYMBOL_SVGS.UM;
+            document.getElementById('m2-btn-c').innerHTML = SYMBOL_SVGS.C;
+            document.getElementById('m2-btn-d').innerHTML = SYMBOL_SVGS.D;
+            document.getElementById('m2-btn-u').innerHTML = SYMBOL_SVGS.U;
+        }
+
+        function pressNumpad(key) {
+            playSound('click');
+            if (key === 'back') {
+                gameState.numpadInput = gameState.numpadInput.slice(0, -1);
+            } else if (gameState.numpadInput.length < 7) {
+                gameState.numpadInput += key;
+            }
+            updateNumpadDisplay();
+        }
+
+        function updateNumpadDisplay() {
+            const formatted = gameState.numpadInput ? formatSpanishNumber(parseInt(gameState.numpadInput, 10)) : '_';
+            if (gameState.currentMode === 'mode1') {
+                document.getElementById('numpadDisplay1').innerText = formatted;
+            } else if (gameState.currentMode === 'mode3') {
+                document.getElementById('numpadDisplay3').innerText = formatted;
+            }
+        }
+
+        function resetNumpad() {
+            gameState.numpadInput = '';
+            updateNumpadDisplay();
+        }
+
+        function setWelcomeDifficulty(diff) {
+            playSound('click');
+            gameState.difficulty = diff;
+            ['welcDiffEasy', 'welcDiffMedium', 'welcDiffHard'].forEach(id => {
+                document.getElementById(id).className = 'comic-button bg-slate-700 text-slate-300 px-2 py-1 rounded-lg';
+            });
+            if (diff === 'easy') document.getElementById('welcDiffEasy').className = 'comic-button bg-emerald-500 text-white px-2 py-1 rounded-lg';
+            if (diff === 'medium') document.getElementById('welcDiffMedium').className = 'comic-button bg-yellow-500 text-slate-950 px-2 py-1 rounded-lg';
+            if (diff === 'hard') document.getElementById('welcDiffHard').className = 'comic-button bg-red-600 text-white px-2 py-1 rounded-lg';
+        }
+
+        function setWelcomeMode(mode) {
+            playSound('click');
+            gameState.currentMode = mode;
+            ['welcMode1', 'welcMode2', 'welcMode3'].forEach(id => {
+                document.getElementById(id).className = 'comic-button bg-slate-700 text-slate-300 px-2 py-1 rounded-lg';
+            });
+            if (mode === 'mode1') document.getElementById('welcMode1').className = 'comic-button bg-sky-500 text-white px-2 py-1 rounded-lg';
+            if (mode === 'mode2') document.getElementById('welcMode2').className = 'comic-button bg-yellow-500 text-slate-950 px-2 py-1 rounded-lg';
+            if (mode === 'mode3') document.getElementById('welcMode3').className = 'comic-button bg-red-600 text-white px-2 py-1 rounded-lg';
+        }
+
+        function startGameFromWelcome() {
+            playSound('correct');
+            startSuperheroMusic();
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+
+            gameState.round = 1;
+            gameState.score = 0;
+            gameState.streak = 0;
+            updateStatsUI();
+
+            setDifficulty(gameState.difficulty);
+            switchMode(gameState.currentMode);
+        }
+
+        function goToWelcomeScreen() {
+            playSound('click');
+            stopSuperheroMusic();
+            if (gameState.mode3Interval) clearInterval(gameState.mode3Interval);
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+        }
+
+        function switchMode(mode) {
+            playSound('click');
+            gameState.currentMode = mode;
+
+            document.getElementById('mode1Container').classList.add('hidden');
+            document.getElementById('mode2Container').classList.add('hidden');
+            document.getElementById('mode3Container').classList.add('hidden');
+
+            if (gameState.mode3Interval) clearInterval(gameState.mode3Interval);
+
+            ['mode1Btn', 'mode2Btn', 'mode3Btn'].forEach(btnId => {
+                document.getElementById(btnId).className = 'comic-button bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-xs md:text-sm';
+            });
+
+            resetNumpad();
+
+            if (mode === 'mode1') {
+                document.getElementById('mode1Container').classList.remove('hidden');
+                document.getElementById('mode1Btn').className = 'comic-button bg-sky-500 text-white px-2.5 py-1 rounded-lg text-xs md:text-sm';
+                generateMode1Problem();
+            } else if (mode === 'mode2') {
+                document.getElementById('mode2Container').classList.remove('hidden');
+                document.getElementById('mode2Btn').className = 'comic-button bg-yellow-400 text-slate-950 px-2.5 py-1 rounded-lg text-xs md:text-sm';
+                generateMode2Problem();
+            } else if (mode === 'mode3') {
+                document.getElementById('mode3Container').classList.remove('hidden');
+                document.getElementById('mode3Btn').className = 'comic-button bg-red-600 text-white px-2.5 py-1 rounded-lg text-xs md:text-sm';
+                resetMode3Overlay();
+            }
+        }
+
+        function setDifficulty(diff) {
+            playSound('click');
+            gameState.difficulty = diff;
+
+            ['diffEasy', 'diffMedium', 'diffHard'].forEach(btnId => {
+                document.getElementById(btnId).className = 'comic-button bg-slate-700 text-slate-300 px-2 py-0.5 rounded text-[11px]';
+            });
+
+            if (diff === 'easy') document.getElementById('diffEasy').className = 'comic-button bg-emerald-500 text-white px-2 py-0.5 rounded text-[11px]';
+            if (diff === 'medium') document.getElementById('diffMedium').className = 'comic-button bg-yellow-500 text-slate-950 px-2 py-0.5 rounded text-[11px]';
+            if (diff === 'hard') document.getElementById('diffHard').className = 'comic-button bg-red-600 text-white px-2 py-0.5 rounded text-[11px]';
+
+            if (gameState.currentMode === 'mode1') generateMode1Problem();
+            if (gameState.currentMode === 'mode2') generateMode2Problem();
+            if (gameState.currentMode === 'mode3' && gameState.mode3Active) generateMode3Problem();
+        }
+
+        function getRandomDigitCounts() {
+            const counts = { CM: 0, DM: 0, UM: 0, C: 0, D: 0, U: 0 };
+            counts.U = Math.floor(Math.random() * 8);
+            counts.D = Math.floor(Math.random() * 8);
+            counts.C = Math.floor(Math.random() * 8);
+            counts.UM = Math.floor(Math.random() * 8);
+
+            if (gameState.difficulty === 'medium' || gameState.difficulty === 'hard') {
+                counts.DM = Math.floor(Math.random() * 8);
+            }
+            if (gameState.difficulty === 'hard') {
+                counts.CM = Math.floor(Math.random() * 7) + 1;
+            } else if (gameState.difficulty === 'medium') {
+                counts.DM = Math.floor(Math.random() * 7) + 1;
+            } else {
+                counts.UM = Math.floor(Math.random() * 7) + 1;
+            }
+
+            return counts;
+        }
+
+        function calculateTotalFromCounts(counts) {
+            return (counts.CM * 100000) + (counts.DM * 10000) + (counts.UM * 1000) + (counts.C * 100) + (counts.D * 10) + (counts.U * 1);
+        }
+
+        function formatSpanishNumber(num) {
+            return num.toLocaleString('es-ES');
+        }
+
+        function advanceRound() {
+            gameState.round++;
+            if (gameState.round > gameState.maxRounds) {
+                showVictoryScreen();
+            } else {
+                updateStatsUI();
+            }
+        }
+
+        function showVictoryScreen() {
+            playSound('correct');
+            triggerConfetti();
+            document.getElementById('victoryScore').innerText = gameState.score;
+            document.getElementById('victoryModal').classList.remove('hidden');
+        }
+
+        function restartLevelFromVictory() {
+            playSound('click');
+            document.getElementById('victoryModal').classList.add('hidden');
+            gameState.round = 1;
+            gameState.score = 0;
+            gameState.streak = 0;
+            updateStatsUI();
+
+            if (gameState.currentMode === 'mode1') generateMode1Problem();
+            if (gameState.currentMode === 'mode2') generateMode2Problem();
+            if (gameState.currentMode === 'mode3') resetMode3Overlay();
+        }
+
+        function generateMode1Problem() {
+            resetNumpad();
+            const counts = getRandomDigitCounts();
+            gameState.mode1TargetNumber = calculateTotalFromCounts(counts);
+
+            const battlefield = document.getElementById('battlefield');
+            battlefield.innerHTML = '';
+
+            const symbolList = [];
+            const keys = ['CM', 'DM', 'UM', 'C', 'D', 'U'];
+            keys.forEach(key => {
+                for (let i = 0; i < counts[key]; i++) symbolList.push(key);
+            });
+
+            symbolList.sort(() => Math.random() - 0.5);
+
+            symbolList.forEach((key) => {
+                const item = document.createElement('div');
+                item.className = 'w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 transition-transform hover:scale-110 cursor-pointer filter drop-shadow-[1px_1px_0px_#000]';
+                const rot = Math.floor(Math.random() * 30) - 15;
+                item.style.transform = `rotate(${rot}deg)`;
+                item.innerHTML = SYMBOL_SVGS[key];
+                item.title = `${SYMBOL_NAMES[key]}`;
+                battlefield.appendChild(item);
+            });
+        }
+
+        function checkMode1Answer() {
+            const userInput = parseInt(gameState.numpadInput, 10) || 0;
+
+            if (userInput === gameState.mode1TargetNumber) {
+                handleSuccess(100, "¡CÓDIGO CORRECTO!");
+                advanceRound();
+                if (gameState.round <= gameState.maxRounds) generateMode1Problem();
+            } else {
+                handleFailure("¡Suma errónea! Consulta la leyenda y cuenta despacio.");
+            }
+        }
+
+        function generateMode2Problem() {
+            const counts = getRandomDigitCounts();
+            gameState.mode2TargetNumber = calculateTotalFromCounts(counts);
+            document.getElementById('mode2TargetDisplay').innerText = formatSpanishNumber(gameState.mode2TargetNumber);
+
+            clearConstructionBox();
+        }
+
+        function addSymbolToBox(symbolKey) {
+            playSound('add');
+            gameState.mode2BoxSymbols.push(symbolKey);
+            renderConstructionBox();
+        }
+
+        function removeSymbolFromBox(index) {
+            playSound('remove');
+            gameState.mode2BoxSymbols.splice(index, 1);
+            renderConstructionBox();
+        }
+
+        function clearConstructionBox() {
+            playSound('click');
+            gameState.mode2BoxSymbols = [];
+            renderConstructionBox();
+        }
+
+        function renderConstructionBox() {
+            const box = document.getElementById('constructionBox');
+            box.innerHTML = '';
+
+            let sum = 0;
+
+            if (gameState.mode2BoxSymbols.length === 0) {
+                box.innerHTML = `<div class="text-slate-500 font-bold text-center w-full py-4 text-xs italic">
+                    Recuadro vacío. Toca los botones superiores para añadir símbolos aquí.
+                </div>`;
+            } else {
+                gameState.mode2BoxSymbols.forEach((key, idx) => {
+                    sum += SYMBOL_VALUES[key];
+
+                    const item = document.createElement('div');
+                    item.className = 'animate-pop w-8 h-8 sm:w-10 sm:h-10 bg-slate-800 p-0.5 rounded-lg border border-slate-600 hover:border-yellow-400 cursor-pointer relative group flex items-center justify-center shrink-0';
+                    item.innerHTML = SYMBOL_SVGS[key] + `<div class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-3.5 h-3.5 text-[9px] font-black flex items-center justify-center">✕</div>`;
+                    item.onclick = () => removeSymbolFromBox(idx);
+
+                    box.appendChild(item);
+                });
+            }
+
+            document.getElementById('constructionBoxSum').innerText = formatSpanishNumber(sum);
+        }
+
+        function checkMode2Answer() {
+            let currentSum = 0;
+            gameState.mode2BoxSymbols.forEach(k => currentSum += SYMBOL_VALUES[k]);
+
+            if (currentSum === gameState.mode2TargetNumber) {
+                handleSuccess(150, "¡RECUADRO EXACTO!");
+                advanceRound();
+                if (gameState.round <= gameState.maxRounds) generateMode2Problem();
+            } else {
+                handleFailure(`Tienes ${formatSpanishNumber(currentSum)} y necesitas ${formatSpanishNumber(gameState.mode2TargetNumber)}.`);
+            }
+        }
+
+        const VILLAINS = [
+            { name: "LORD CERO ABSOLUTO", avatar: "🦹‍♂️" },
+            { name: "DOCTORA FRACCIÓN", avatar: "🦹‍♀️" },
+            { name: "SOMBRA CAÓTICA", avatar: "👾" },
+            { name: "TITÁN NUMÉRICO", avatar: "👹" }
+        ];
+
+        function resetMode3Overlay() {
+            gameState.mode3Active = false;
+            if (gameState.mode3Interval) clearInterval(gameState.mode3Interval);
+
+            document.getElementById('mode3StartOverlay').classList.remove('hidden');
+            document.getElementById('mode3PlayArea').classList.add('hidden');
+
+            const randomVillain = VILLAINS[Math.floor(Math.random() * VILLAINS.length)];
+            document.getElementById('villainName').innerText = randomVillain.name;
+            document.getElementById('villainAvatar').innerText = randomVillain.avatar;
+            document.getElementById('mode3Timer').innerText = '30s';
+            document.getElementById('villainHpText').innerText = '100 HP';
+            gameState.villainHp = 100;
+        }
+
+        function startMode3Battle() {
+            playSound('correct');
+            gameState.mode3Active = true;
+            gameState.mode3Timer = 30;
+            gameState.villainHp = 100;
+
+            document.getElementById('mode3StartOverlay').classList.add('hidden');
+            document.getElementById('mode3PlayArea').classList.remove('hidden');
+
+            document.getElementById('villainHpText').innerText = '100 HP';
+            generateMode3Problem();
+
+            if (gameState.mode3Interval) clearInterval(gameState.mode3Interval);
+            gameState.mode3Interval = setInterval(() => {
+                gameState.mode3Timer--;
+                document.getElementById('mode3Timer').innerText = `${gameState.mode3Timer}s`;
+
+                if (gameState.mode3Timer <= 0) {
+                    clearInterval(gameState.mode3Interval);
+                    gameState.mode3Active = false;
+                    playSound('wrong');
+                    showPopup("¡TIEMPO AGOTADO!", "El villano escapó. ¡Inténtalo de nuevo!", false);
+                    setTimeout(() => resetMode3Overlay(), 2200);
+                }
+            }, 1000);
+        }
+
+        function generateMode3Problem() {
+            resetNumpad();
+            const counts = getRandomDigitCounts();
+            gameState.mode3TargetNumber = calculateTotalFromCounts(counts);
+
+            const battlefield = document.getElementById('mode3Battlefield');
+            battlefield.innerHTML = '';
+
+            const symbolList = [];
+            const keys = ['CM', 'DM', 'UM', 'C', 'D', 'U'];
+            keys.forEach(key => {
+                for (let i = 0; i < counts[key]; i++) symbolList.push(key);
+            });
+            symbolList.sort(() => Math.random() - 0.5);
+
+            symbolList.forEach((key) => {
+                const item = document.createElement('div');
+                item.className = 'w-8 h-8 sm:w-10 sm:h-10 filter drop-shadow-[1px_1px_0px_#000]';
+                const rot = Math.floor(Math.random() * 20) - 10;
+                item.style.transform = `rotate(${rot}deg)`;
+                item.innerHTML = SYMBOL_SVGS[key];
+                battlefield.appendChild(item);
+            });
+        }
+
+        function checkMode3Answer() {
+            if (!gameState.mode3Active) return;
+
+            const userInput = parseInt(gameState.numpadInput, 10) || 0;
+
+            if (userInput === gameState.mode3TargetNumber) {
+                gameState.villainHp = Math.max(0, gameState.villainHp - 25);
+                document.getElementById('villainHpText').innerText = `${gameState.villainHp} HP`;
+                playSound('correct');
+                showPopup("¡BAM!", "-25 HP Al Villano", true);
+                gameState.score += 150;
+                gameState.streak++;
+                advanceRound();
+
+                if (gameState.villainHp <= 0) {
+                    clearInterval(gameState.mode3Interval);
+                    gameState.mode3Active = false;
+                    triggerConfetti();
+                    showPopup("¡VICTORIA TOTAL!", "¡Derrotaste al villano!", true);
+                    setTimeout(() => resetMode3Overlay(), 2600);
+                } else if (gameState.round <= gameState.maxRounds) {
+                    generateMode3Problem();
+                }
+            } else {
+                playSound('wrong');
+                showPopup("¡FALLO!", "Código incorrecto", false);
+            }
+        }
+
+        function handleSuccess(points, comicTitle) {
+            playSound('correct');
+            triggerConfetti();
+            gameState.score += points + (gameState.streak * 20);
+            gameState.streak++;
+            updateStatsUI();
+            showPopup(comicTitle, `+${points} Puntos de Poder`, true);
+        }
+
+        function handleFailure(message) {
+            playSound('wrong');
+            gameState.streak = 0;
+            updateStatsUI();
+            showPopup("¡ERROR!", message, false);
+        }
+
+        function showPopup(title, text, isSuccess) {
+            const popup = document.getElementById('comicPopup');
+            const popupBox = document.getElementById('comicPopupBox');
+            const titleEl = document.getElementById('comicPopupTitle');
+            const textEl = document.getElementById('comicPopupText');
+
+            titleEl.innerText = title;
+            textEl.innerText = text;
+
+            if (isSuccess) {
+                popupBox.className = "comic-box-yellow p-4 md:p-6 transform rotate-1 max-w-xs md:max-w-sm text-center shadow-2xl transition-all duration-200 scale-100 opacity-100";
+                titleEl.className = "font-comic text-3xl md:text-5xl text-green-600 text-comic-shadow uppercase mb-1";
+            } else {
+                popupBox.className = "comic-box-yellow p-4 md:p-6 transform -rotate-1 max-w-xs md:max-w-sm text-center shadow-2xl transition-all duration-200 scale-100 opacity-100";
+                titleEl.className = "font-comic text-3xl md:text-5xl text-red-600 text-comic-shadow uppercase mb-1";
+            }
+
+            popup.classList.remove('hidden');
+
+            setTimeout(() => {
+                popupBox.classList.remove('scale-100', 'opacity-100');
+                popupBox.classList.add('scale-90', 'opacity-0');
+                setTimeout(() => popup.classList.add('hidden'), 200);
+            }, 1300);
+        }
+
+        function updateStatsUI() {
+            document.getElementById('scoreDisplay').innerText = gameState.score;
+            document.getElementById('streakDisplay').innerText = `🔥 ${gameState.streak}`;
+            document.getElementById('roundDisplay').innerText = `${gameState.round} / ${gameState.maxRounds}`;
+        }
+
+        function speakSymbolInfo(symbolKey) {
+            playSound('click');
+            const info = {
+                CM: "Puño de Fuerza (CM) = 100.000",
+                DM: "Escarabajo Mágico (DM) = 10.000",
+                UM: "Águila Real (UM) = 1.000",
+                C: "Rayo Veloz (C) = 100",
+                D: "Escudo Estelar (D) = 10",
+                U: "Katana de Héroe (U) = 1"
+            };
+            showPopup("PODER DE SÍMBOLO", info[symbolKey], true);
+        }
+
+        // Particle Confetti System
+        let confettiParticles = [];
+        let confettiCanvas, confettiCtx;
+
+        function initConfetti() {
+            confettiCanvas = document.getElementById('confettiCanvas');
+            confettiCtx = confettiCanvas.getContext('2d');
+            resizeConfettiCanvas();
+            window.addEventListener('resize', resizeConfettiCanvas);
+            requestAnimationFrame(updateConfetti);
+        }
+
+        function resizeConfettiCanvas() {
+            if (confettiCanvas) {
+                confettiCanvas.width = window.innerWidth;
+                confettiCanvas.height = window.innerHeight;
+            }
+        }
+
+        function triggerConfetti() {
+            const colors = ['#facc15', '#0284c7', '#10b981', '#ef4444', '#a855f7', '#38bdf8'];
+            for (let i = 0; i < 40; i++) {
+                confettiParticles.push({
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2,
+                    vx: (Math.random() - 0.5) * 14,
+                    vy: (Math.random() - 0.7) * 14,
+                    size: Math.random() * 8 + 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    vRot: (Math.random() - 0.5) * 10,
+                    life: 1
+                });
+            }
+        }
+
+        function updateConfetti() {
+            if (confettiCtx && confettiCanvas) {
+                confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+                confettiParticles.forEach((p, idx) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.3;
+                    p.rotation += p.vRot;
+                    p.life -= 0.02;
+
+                    confettiCtx.save();
+                    confettiCtx.translate(p.x, p.y);
+                    confettiCtx.rotate((p.rotation * Math.PI) / 180);
+                    confettiCtx.fillStyle = p.color;
+                    confettiCtx.globalAlpha = Math.max(0, p.life);
+                    confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    confettiCtx.restore();
+
+                    if (p.life <= 0) confettiParticles.splice(idx, 1);
+                });
+            }
+            requestAnimationFrame(updateConfetti);
+        }
+    </script>
+</body>
+</html>
